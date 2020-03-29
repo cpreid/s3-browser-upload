@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>{{title}}</title>
+</head>
+<body>
+
+<input type="file"
+       id="fileinput" name="fileinput"
+       accept=".mp3,audio/*">
+
+<script type="text/javascript">
+// Select your input type file and store it in a variable
+var input = document.getElementById('fileinput');
+
+
+// This will upload the file after having read it
+var upload = (file, signedURL, filetype, successFcn, errorFcn) => {
+  fetch(signedURL, { // Your POST endpoint
+    method: 'PUT',
+    headers: {
+      "Content-Type" : filetype,
+      'x-amz-acl'    : '{{S3_OBJECT_ACL}}'
+    },
+    body: file // This is your file object
+  })
+  .then(successFcn)
+  .catch(errorFcn);
+};
+
+// Event handler executed when a file is selected
+var onSelectFile = () => {
+  var fileData = input.files[0];
+	fetch('/signed-url-put-object', {
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    method: 'POST',
+    body: JSON.stringify({type: fileData.type, name: fileData.name})
+  }).then(respBody => respBody.json()).then(jsonResp => {		
+		upload(input.files[0], jsonResp.signedURL, fileData.type, function() {
+      // successful upload
+			console.log('Upload complete', `https://{{S3_BUCKET}}.s3.amazonaws.com/${jsonResp.s3Key}`);
+		}, function(err) {
+      // unsuccessful upload
+			console.log('Unable to complete upload', err);
+		})
+	})
+}
+
+// Add a listener on your input
+// It will be triggered when a file will be selected
+input.addEventListener('change', onSelectFile, false);
+</script>
+
+</body>
+</html>
