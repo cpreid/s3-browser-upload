@@ -7,6 +7,7 @@ const getURL = async (key='', filetype='') => {
   const client = new AWS.S3({
     signatureVersion      : process.env.S3_SIGNATURE_VERSION,
     region                : process.env.S3_REGION,
+    
     // THIS IS NECESSARY FOR ACCELERATED TRANSFERS    
     useAccelerateEndpoint : true,
     // THIS ONE ISN'T NECESSARY
