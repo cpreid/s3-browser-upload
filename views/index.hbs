@@ -1,77 +1,81 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<title>{{title}}</title>
-  <style type="text/css">
-  .drop-file {
-    padding: 20px;
-    background: #eee;
-    border:2px dashed #ccc;
-    text-align: center;
-  }
-  .drop-file-over {
-    border:2px solid #ccc;
-  }
-  </style>
-</head>
-<body>
+  <head>
+    <title>{{title}}</title>
+    <style type="text/css">
+      .drop-file {
+        padding: 20px;
+        background: #eee;
+        border: 2px dashed #ccc;
+        text-align: center;
+      }
+      .drop-file-over {
+        border: 2px solid #ccc;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="drop-file">Drop file</div>
 
-<div class="drop-file">Drop file</div>
-
-<script type="text/javascript">
-// Select your input type file and store it in a variable
-var dropzone = document.querySelector('.drop-file');
-
-// This will upload the file after having read it
-var upload = (file, signedURL, filetype, successFcn, errorFcn) => {
-  fetch(signedURL, { // Your POST endpoint
-    method: 'PUT',
-    headers: {
-      "Content-Type" : filetype,
-      'x-amz-acl'    : '{{S3_OBJECT_ACL}}'
-    },
-    body: file // This is your file object
-  })
-  .then(successFcn)
-  .catch(errorFcn);
-};
-
-// Event handler executed when a file is selected
-var onDropFile = (fileData) => {
-	fetch('/signed-url-put-object', {
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    method: 'POST',
-    body: JSON.stringify({type: fileData.type, name: fileData.name})
-  }).then(respBody => respBody.json()).then(jsonResp => {		
-		upload(fileData, jsonResp.signedURL, fileData.type, function() {
-      // successful upload
-      var S3_URL = `https://{{S3_BUCKET}}.s3.amazonaws.com/${jsonResp.s3Key}`;
-			console.log('Upload complete', S3_URL);
-      dropzone.innerHTML = `Upload complete: <a href="${S3_URL}">${S3_URL}</a>`;
-		}, function(err) {
-      // unsuccessful upload
-			console.log('Unable to complete upload', err);
-      dropzone.innerText = `Unable to complete upload`;
-		})
-	})
-}  
-
-dropzone.ondragover = function() {
-    this.classList.add('drop-file-over');
-    return false;
-}
-dropzone.ondragleave = function() {
-    this.classList.remove('drop-file-over');
-    return false;
-}
-dropzone.ondrop = function(e) {
-    e.preventDefault();  
-    this.classList.remove('drop-file-over');
-    onDropFile(e.dataTransfer.files[0])
-}  
-</script>
-
-</body>
+    <script type="text/javascript">
+      // Select your input type file and store it in a variable
+      var dropzone = document.querySelector(".drop-file");
+      // This will upload the file after having read it
+      var upload = (file, signedURL, filetype, successFcn, errorFcn) => {
+        fetch(signedURL, {
+          // Your POST endpoint
+          method: "PUT",
+          headers: {
+            "Content-Type": filetype,
+            "x-amz-acl": "{{S3_OBJECT_ACL}}"
+          },
+          body: file // This is your file object
+        })
+          .then(successFcn)
+          .catch(errorFcn);
+      };
+      // Event handler executed when a file is selected
+      var onDropFile = fileData => {
+        fetch("/signed-url-put-object", {
+          headers: {
+            "Content-Type": "application/json"
+          },
+          method: "POST",
+          body: JSON.stringify({ type: fileData.type, name: fileData.name })
+        })
+          .then(respBody => respBody.json())
+          .then(jsonResp => {
+            upload(
+              fileData,
+              jsonResp.signedURL,
+              fileData.type,
+              function() {
+                // successful upload
+                var S3_URL = `https://{{S3_BUCKET}}.s3.amazonaws.com/${jsonResp.s3Key}`;
+                console.log("Upload complete", S3_URL);
+                dropzone.innerHTML = `Upload complete: <a href="${S3_URL}">${S3_URL}</a>`;
+              },
+              function(err) {
+                // unsuccessful upload
+                console.log("Unable to complete upload", err);
+                dropzone.innerText = `Unable to complete upload`;
+              }
+            );
+          });
+      };
+      dropzone.ondragover = function() {
+        this.classList.add("drop-file-over");
+        return false;
+      };
+      dropzone.ondragleave = function() {
+        this.classList.remove("drop-file-over");
+        return false;
+      };
+      dropzone.ondrop = function(e) {
+        e.preventDefault();
+        this.classList.remove("drop-file-over");
+        onDropFile(e.dataTransfer.files[0]);
+      };
+    </script>
+  </body>
 </html>
