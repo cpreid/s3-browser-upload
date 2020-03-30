@@ -18,12 +18,14 @@ router.get('/', function(req, res, next) {
 /* Pass a presigned s3 upload URL and the random s3Key back to the client */
 router.post('/signed-url-put-object', async (req, res) => {
   let extension = path.extname(req.body.name),
-    s3Key = `${cryptoRandomString({length: 10})}${extension}`,
-    signedURL = await s3Uploads.getURL(s3Key, req.body.type)
+      s3Key = `${cryptoRandomString({length: 10})}${extension}`,
+      signedURL = await s3Uploads.getURL(s3Key, req.body.type)
+
   return res.json({
     signedURL,
     s3Key
   })
+  
 })
 
 module.exports = router;
